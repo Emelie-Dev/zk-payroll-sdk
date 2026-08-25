@@ -220,3 +220,6 @@ export * from "./employees";
 
 // ── Contract Error Remediation Mapper ───────────────────────────────────────
 export * from "./remediation";
+
+// ── Payroll Policy Compiler ──────────────────────────────────────────────────
+export * from "./policy";
