@@ -217,3 +217,6 @@ export { ReceiptVerificationCode as VerificationCode } from "./receipts";
 // ── Employee Eligibility & Reason Codes ─────────────────────────────────────
 export * from "./eligibility";
 export * from "./employees";
+
+// ── Contract Error Remediation Mapper ───────────────────────────────────────
+export * from "./remediation";
