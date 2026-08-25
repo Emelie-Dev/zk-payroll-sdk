@@ -223,3 +223,15 @@ export * from "./remediation";
 
 // ── Payroll Policy Compiler ──────────────────────────────────────────────────
 export * from "./policy";
+
+// ── Treasury Reservation Lifecycle ──────────────────────────────────────────
+export * from "./treasury";
+
+// ── Reservation Helpers ─────────────────────────────────────────────────────
+export * from "./reservations";
+
+// ── Payroll Dispute Status Decoder ──────────────────────────────────────────
+export * from "./disputes";
+
+// ── Offline Payroll Draft Validation ────────────────────────────────────────
+export * from "./validation";
