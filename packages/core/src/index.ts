@@ -235,3 +235,6 @@ export * from "./disputes";
 
 // ── Offline Payroll Draft Validation ────────────────────────────────────────
 export * from "./validation";
+
+// ── Batch Import Duplicate Cluster Detection ────────────────────────────────
+export * from "./import";
