@@ -16,8 +16,7 @@ export const ErrorCategory = {
   METADATA: "metadata",
   SIMULATION: "simulation",
   IDEMPOTENCY: "idempotency",
-  RECEIPT: "receipt",
-  ELIGIBILITY: "eligibility",
+  AUDIT: "audit",
 } as const;
 
 export type ErrorCategoryType = (typeof ErrorCategory)[keyof typeof ErrorCategory];
@@ -312,69 +311,14 @@ export const ERROR_CODE_REGISTRY: Record<string, ErrorCodeEntry> = {
       "Unexpected on-chain activity was detected. Review the reconciliation report for details.",
   },
 
-  // ── Receipt Verification ────────────────────────────────────────────────
-  RECEIPT_VERIFICATION_FAILED: {
-    category: ErrorCategory.RECEIPT,
+  // ── Audit ────────────────────────────────────────────────────────────────
+  AUDIT_ACCESS_REQUEST_VALIDATION_FAILED: {
+    category: ErrorCategory.AUDIT,
     meaning:
-      "Payroll receipt verification failed one or more integrity, settlement, or digest checks.",
+      "Audit access request validation failed — the request is missing required fields, has invalid dates, or violates business rules.",
     retryable: false,
     suggestedMessage:
-      "The payroll receipt could not be verified. Please check the verification report for details.",
-  },
-  RECEIPT_INVALID_SHAPE: {
-    category: ErrorCategory.RECEIPT,
-    meaning: "The payroll receipt object is malformed or missing required schema fields.",
-    retryable: false,
-    suggestedMessage: "The payroll receipt format is invalid or missing required fields.",
-  },
-  RECEIPT_PAYROLL_ID_MISMATCH: {
-    category: ErrorCategory.RECEIPT,
-    meaning: "The receipt payroll ID does not match the expected payroll ID.",
-    retryable: false,
-    suggestedMessage: "The receipt does not match the expected payroll run ID.",
-  },
-  RECEIPT_UNSETTLED: {
-    category: ErrorCategory.RECEIPT,
-    meaning: "The receipt indicates an unsettled or failed settlement status.",
-    retryable: true,
-    suggestedMessage: "The payroll transaction has not reached final settlement or has failed.",
-  },
-  RECEIPT_TRANSACTION_HASH_MISMATCH: {
-    category: ErrorCategory.RECEIPT,
-    meaning: "The receipt transaction hash does not match the expected on-chain transaction hash.",
-    retryable: false,
-    suggestedMessage: "The transaction reference on the receipt does not match expected records.",
-  },
-  RECEIPT_METADATA_DIGEST_MISMATCH: {
-    category: ErrorCategory.RECEIPT,
-    meaning: "The receipt metadata digest does not match the expected or computed metadata hash.",
-    retryable: false,
-    suggestedMessage:
-      "The metadata digest on the receipt does not match the payroll metadata content.",
-  },
-  RECEIPT_EXPIRED: {
-    category: ErrorCategory.RECEIPT,
-    meaning: "The receipt age exceeds the allowable freshness time limit.",
-    retryable: false,
-    suggestedMessage: "The payroll receipt has expired and can no longer be verified.",
-  },
-
-  // ── Employee Eligibility ────────────────────────────────────────────────
-  INELIGIBLE_EMPLOYEE_RECORD: {
-    category: ErrorCategory.ELIGIBILITY,
-    meaning:
-      "Employee record is ineligible for payroll resolution due to failing one or more validation/eligibility rules.",
-    retryable: false,
-    suggestedMessage:
-      "The employee record is ineligible for payroll resolution. Please check the eligibility reason codes.",
-  },
-  BATCH_ELIGIBILITY_FAILED: {
-    category: ErrorCategory.ELIGIBILITY,
-    meaning:
-      "One or more employee records in the batch failed eligibility checks during strict batch processing.",
-    retryable: false,
-    suggestedMessage:
-      "The payroll batch contains ineligible employee records. Please resolve the blocked recipients.",
+      "The audit access request failed validation. Please review the requester details, scope, expiration, reason, and target payroll period.",
   },
 };
 
