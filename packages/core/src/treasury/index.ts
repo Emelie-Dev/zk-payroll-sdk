@@ -1,0 +1,23 @@
+/**
+ * Treasury Module
+ *
+ * Provides funding reservation client and related utilities for managing
+ * payroll treasury operations.
+ */
+
+export { TreasuryReservationClient } from "./TreasuryReservationClient";
+export type {
+  FundingReservation,
+  ReservationStatus,
+  ReservationEvent,
+  ReservationStateSnapshot,
+  ReservationReconciliationEntry,
+  ReservationReconciliationResult,
+  ReserveRequest,
+  ReserveResponse,
+  ReleaseReservationRequest,
+  ReleaseReservationResponse,
+  FinalizeReservationRequest,
+  FinalizeReservationResponse,
+  ReservationStatusCheck,
+} from "./types";

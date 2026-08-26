@@ -218,5 +218,20 @@ export { ReceiptVerificationCode as VerificationCode } from "./receipts";
 export * from "./eligibility";
 export * from "./employees";
 
-// ── Payroll Execution Planner ────────────────────────────────────────────────
-export * from "./planner";
+// ── Contract Error Remediation Mapper ───────────────────────────────────────
+export * from "./remediation";
+
+// ── Payroll Policy Compiler ──────────────────────────────────────────────────
+export * from "./policy";
+
+// ── Treasury Reservation Lifecycle ──────────────────────────────────────────
+export * from "./treasury";
+
+// ── Reservation Helpers ─────────────────────────────────────────────────────
+export * from "./reservations";
+
+// ── Payroll Dispute Status Decoder ──────────────────────────────────────────
+export * from "./disputes";
+
+// ── Offline Payroll Draft Validation ────────────────────────────────────────
+export * from "./validation";
