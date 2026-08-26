@@ -186,14 +186,10 @@ export class WorkerProofGenerator implements IProofGenerator {
 
   // ── Dispatch helper ────────────────────────────────────────────────────────
 
-<<<<<<< Updated upstream
   private dispatch(
     req: WorkerRequest,
     onProgress?: PayrollProgressCallback
   ): Promise<ProofPayload> {
-=======
-  private dispatch(req: WorkerRequest, onProgress?: ProofProgressCallback): Promise<ProofPayload> {
->>>>>>> Stashed changes
     return new Promise<ProofPayload>((resolve, reject) => {
       const timeoutMs = this.options.timeoutMs ?? 120_000;
       const timer = setTimeout(() => {

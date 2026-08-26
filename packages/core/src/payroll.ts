@@ -212,7 +212,6 @@ export class PayrollService {
     return transactions.filter((t) => t.amount > criteria.minAmount);
   }
 
-<<<<<<< Updated upstream
   /**
    * Validate a batch payroll payload locally before processing.
    * Returns structured validation errors or empty array if valid.
@@ -238,7 +237,8 @@ export class PayrollService {
       results.push(res);
     }
     return results;
-=======
+  }
+
   /** Filter archived, disputed, and held runs out of active operational views. */
   filterActivePayrollRuns<T extends PayrollRunItem>(runs: T[]): T[] {
     return filterActiveRuns(runs);
@@ -262,7 +262,6 @@ export class PayrollService {
   /** Filter held payroll runs. */
   filterHeldPayrollRuns<T extends PayrollRunItem>(runs: T[]): T[] {
     return filterHeldRuns(runs);
->>>>>>> Stashed changes
   }
 
   private validatePaymentParams(params: PaymentParams): void {

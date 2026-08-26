@@ -88,19 +88,6 @@ export const PayrollServiceErrorCode = {
 export type PayrollServiceErrorCode =
   (typeof PayrollServiceErrorCode)[keyof typeof PayrollServiceErrorCode];
 
-<<<<<<< Updated upstream
-=======
-/**
- * @deprecated Use `ZkPayrollError` instead.
- */
-export class PayrollError extends ZkPayrollError {
-  constructor(message: string, code: number | string) {
-    super(message, String(code));
-    this.name = "PayrollError";
-  }
-}
-
->>>>>>> Stashed changes
 /** @deprecated Use structured error logging instead. */
 export function handleApiError(error: unknown): void {
   console.error("API Error:", error);
