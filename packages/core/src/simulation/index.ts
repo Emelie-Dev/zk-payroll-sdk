@@ -6,6 +6,7 @@ export type {
   SimulationResult,
   SimulationStatus,
 } from "./types";
+<<<<<<< Updated upstream
 
 // ── End-to-end payroll simulation ──────────────────────────────────────────
 export { PayrollSimulator } from "./PayrollSimulator";
@@ -36,3 +37,5 @@ export type {
 } from "./types";
 
 export { SimulationErrorCode } from "./types";
+=======
+>>>>>>> Stashed changes

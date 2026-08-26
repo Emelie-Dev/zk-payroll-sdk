@@ -77,6 +77,7 @@ function argsToHex(args: xdr.ScVal[]): string {
 // These bypass TypeScript private access so that snapshot tests can verify the
 // serialised output directly without going through the full invoke pipeline.
 
+<<<<<<< Updated upstream
 function callEncodePayrollProof(wrapper: PayrollContractWrapper, proof: ProofPayload): xdr.ScVal {
   return (wrapper as unknown as { encodeProof(p: ProofPayload): xdr.ScVal }).encodeProof(proof);
 }
@@ -91,11 +92,25 @@ function callEncodeProofStruct(
 }
 
 class TestableProofVerifierClient extends ProofVerifierClient {
+=======
+class TestablePayrollContractWrapper extends PayrollContractWrapper {
+  public override encodeProof(proof: ProofPayload): xdr.ScVal {
+    return super.encodeProof(proof);
+  }
+}
+
+class TestableProofVerifierClient extends ProofVerifierClient {
+  public override encodeProofStruct(proof: ProofStruct): xdr.ScVal {
+    return super.encodeProofStruct(proof);
+  }
+
+>>>>>>> Stashed changes
   public encodeVerifyArgs(
     proof: ProofStruct,
     publicInputs: string[],
     verificationKeyId: number
   ): xdr.ScVal[] {
+<<<<<<< Updated upstream
     const proofStructScVal = callEncodeProofStruct(this, proof);
 
     const publicInputsScVal = xdr.ScVal.scvVec(
@@ -107,6 +122,27 @@ class TestableProofVerifierClient extends ProofVerifierClient {
     );
 
     return [proofStructScVal, publicInputsScVal, nativeToScVal(verificationKeyId, { type: "u32" })];
+=======
+    const proofStructScVal = super.encodeProofStruct(proof);
+
+    return [
+      proofStructScVal,
+      xdr.ScVal.scvVec(
+        publicInputs.map((s) => {
+          const isHex = /^[0-9a-fA-F]+$/.test(s) && s.length % 2 === 0;
+          const buf = isHex ? Buffer.from(s, "hex") : Buffer.from(s, "utf-8");
+          return nativeToScVal(new Uint8Array(buf), { type: "bytes" });
+        })
+      ),
+      nativeToScVal(verificationKeyId, { type: "u32" }),
+    ];
+  }
+}
+
+class TestableSalaryCommitmentClient extends SalaryCommitmentClient {
+  public override encodeProofStruct(proof: ProofStruct): xdr.ScVal {
+    return super.encodeProofStruct(proof);
+>>>>>>> Stashed changes
   }
 }
 
@@ -139,7 +175,11 @@ describe("PayrollContractWrapper.encodeProof (ProofPayload → XDR ScVal)", () =
   let wrapper: PayrollContractWrapper;
 
   beforeAll(() => {
+<<<<<<< Updated upstream
     wrapper = new PayrollContractWrapper(createMockServer(), TEST_CONTRACT_ID);
+=======
+    wrapper = new TestablePayrollContractWrapper(createMockServer(), TEST_CONTRACT_ID);
+>>>>>>> Stashed changes
   });
 
   const FIXTURES: [string, ProofPayload][] = [
@@ -165,7 +205,11 @@ describe("ProofVerifierClient.encodeProofStruct (ProofStruct → XDR ScVal)", ()
   let client: ProofVerifierClient;
 
   beforeAll(() => {
+<<<<<<< Updated upstream
     client = new ProofVerifierClient(createMockServer(), TEST_CONTRACT_ID);
+=======
+    client = new TestableProofVerifierClient(createMockServer(), TEST_CONTRACT_ID);
+>>>>>>> Stashed changes
   });
 
   const FIXTURES: [string, ProofStruct][] = [
@@ -191,7 +235,11 @@ describe("SalaryCommitmentClient.encodeProofStruct (ProofStruct → XDR ScVal)",
   let client: SalaryCommitmentClient;
 
   beforeAll(() => {
+<<<<<<< Updated upstream
     client = new SalaryCommitmentClient(createMockServer(), TEST_CONTRACT_ID);
+=======
+    client = new TestableSalaryCommitmentClient(createMockServer(), TEST_CONTRACT_ID);
+>>>>>>> Stashed changes
   });
 
   const FIXTURES: [string, ProofStruct][] = [

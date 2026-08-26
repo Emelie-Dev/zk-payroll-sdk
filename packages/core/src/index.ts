@@ -143,6 +143,7 @@ export * from "./archived";
 // ── Redaction Utilities ─────────────────────────────────────────────────────
 export * from "./redaction";
 
+<<<<<<< Updated upstream
 // ── Multi-Asset Metadata ────────────────────────────────────────────────────
 export * from "./assets";
 
@@ -235,3 +236,7 @@ export * from "./disputes";
 
 // ── Offline Payroll Draft Validation ────────────────────────────────────────
 export * from "./validation";
+=======
+// ── Archive Lifecycle & Filtering ───────────────────────────────────────────
+export * from "./archive";
+>>>>>>> Stashed changes

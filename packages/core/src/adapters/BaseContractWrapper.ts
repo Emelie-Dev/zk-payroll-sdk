@@ -1,11 +1,18 @@
 import {
+<<<<<<< Updated upstream
   rpc,
   Contract,
   Transaction,
+=======
+  Keypair,
+  rpc,
+  Contract,
+>>>>>>> Stashed changes
   TransactionBuilder,
   Networks,
   BASE_FEE,
   xdr,
+<<<<<<< Updated upstream
   Keypair,
 } from "@stellar/stellar-sdk";
 import type { ISigner } from "../signer/types";
@@ -13,6 +20,13 @@ import { toISigner } from "../signer/KeypairSigner";
 import { ContractExecutionError, ContractErrorCode, mapRpcError, RpcTimeoutError } from "../errors";
 import { RunIdentifier } from "../core/run-identifier";
 import { withRetry } from "../core/retry";
+=======
+} from "@stellar/stellar-sdk";
+import type { ISigner } from "../signer/types";
+import { toISigner } from "../signer/KeypairSigner";
+import { ContractExecutionError, ContractErrorCode, mapRpcError } from "../errors";
+import { withRetry } from "../core";
+>>>>>>> Stashed changes
 
 /** How long (ms) to wait between transaction status polls */
 const POLL_INTERVAL_MS = 2_000;
@@ -86,6 +100,7 @@ export abstract class BaseContractWrapper {
   protected async buildInvocation(
     method: string,
     args: xdr.ScVal[],
+<<<<<<< Updated upstream
     sourcePublicKey: string,
     network: string = Networks.TESTNET,
     requestId?: string
@@ -95,6 +110,16 @@ export abstract class BaseContractWrapper {
     try {
       // ── 1. Load the source account ─────────────────────────────────────
       const account = await withRetry(() => this.server.getAccount(sourcePublicKey), {
+=======
+    signer: Keypair | ISigner,
+    network: string = Networks.TESTNET
+  ): Promise<xdr.ScVal> {
+    const signerObj = toISigner(signer);
+    try {
+      // ── 1. Load the source account ─────────────────────────────────────
+      const pubKey = await signerObj.getPublicKey();
+      const account = await withRetry(() => this.server.getAccount(pubKey), {
+>>>>>>> Stashed changes
         attempts: 3,
         delayMs: 100,
       });
@@ -125,12 +150,16 @@ export abstract class BaseContractWrapper {
       // ── 4. Assemble: attach footprint and authorisation from simulation ─
       const transaction = rpc.assembleTransaction(rawTx, simResult).build();
 
+<<<<<<< Updated upstream
       return { method, requestId: reqId, network, transaction };
     } catch (err) {
       if (err instanceof ContractExecutionError) throw err;
       throw mapRpcError(err, { requestId: reqId });
     }
   }
+=======
+      await signerObj.sign(preparedTx);
+>>>>>>> Stashed changes
 
   /**
    * Sign and submit an already-built `PreparedInvocation`, then poll until

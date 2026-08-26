@@ -79,15 +79,28 @@ export class SerializationError extends ZkPayrollError {
 
 /** Error codes for PayrollService validation/orchestration failures */
 export const PayrollServiceErrorCode = {
-  PROOF_GENERATION_FAILED: 2001,
-  INVALID_RECIPIENT: 2002,
-  INVALID_AMOUNT: 2003,
-  INVALID_ASSET: 2004,
+  PROOF_GENERATION_FAILED: "2001",
+  INVALID_RECIPIENT: "2002",
+  INVALID_AMOUNT: "2003",
+  INVALID_ASSET: "2004",
 } as const;
 
 export type PayrollServiceErrorCode =
   (typeof PayrollServiceErrorCode)[keyof typeof PayrollServiceErrorCode];
 
+<<<<<<< Updated upstream
+=======
+/**
+ * @deprecated Use `ZkPayrollError` instead.
+ */
+export class PayrollError extends ZkPayrollError {
+  constructor(message: string, code: number | string) {
+    super(message, String(code));
+    this.name = "PayrollError";
+  }
+}
+
+>>>>>>> Stashed changes
 /** @deprecated Use structured error logging instead. */
 export function handleApiError(error: unknown): void {
   console.error("API Error:", error);

@@ -22,6 +22,15 @@ import type {
   CreatePayrollReceiptParams,
 } from "./receipts/types";
 
+import {
+  filterActiveRuns,
+  filterArchivedRuns,
+  filterDisputedRuns,
+  filterFinalizedRuns,
+  filterHeldRuns,
+  PayrollRunItem,
+} from "./archive";
+
 export interface Transaction {
   amount: bigint;
   [key: string]: unknown;
@@ -203,6 +212,7 @@ export class PayrollService {
     return transactions.filter((t) => t.amount > criteria.minAmount);
   }
 
+<<<<<<< Updated upstream
   /**
    * Validate a batch payroll payload locally before processing.
    * Returns structured validation errors or empty array if valid.
@@ -228,6 +238,31 @@ export class PayrollService {
       results.push(res);
     }
     return results;
+=======
+  /** Filter archived, disputed, and held runs out of active operational views. */
+  filterActivePayrollRuns<T extends PayrollRunItem>(runs: T[]): T[] {
+    return filterActiveRuns(runs);
+  }
+
+  /** Filter safely archived runs (excluding disputed or held runs). */
+  filterArchivedPayrollRuns<T extends PayrollRunItem>(runs: T[]): T[] {
+    return filterArchivedRuns(runs);
+  }
+
+  /** Filter disputed payroll runs. */
+  filterDisputedPayrollRuns<T extends PayrollRunItem>(runs: T[]): T[] {
+    return filterDisputedRuns(runs);
+  }
+
+  /** Filter finalized payroll runs free of disputes or holds. */
+  filterFinalizedPayrollRuns<T extends PayrollRunItem>(runs: T[]): T[] {
+    return filterFinalizedRuns(runs);
+  }
+
+  /** Filter held payroll runs. */
+  filterHeldPayrollRuns<T extends PayrollRunItem>(runs: T[]): T[] {
+    return filterHeldRuns(runs);
+>>>>>>> Stashed changes
   }
 
   private validatePaymentParams(params: PaymentParams): void {
@@ -237,7 +272,7 @@ export class PayrollService {
     if (!result.isValid) {
       // Map to backward-compatible PayrollError
       const firstError = result.errors[0];
-      let code = 0;
+      let code: number | string = 0;
       if (firstError.field === "recipient") code = PayrollServiceErrorCode.INVALID_RECIPIENT;
       else if (firstError.field === "amount") code = PayrollServiceErrorCode.INVALID_AMOUNT;
       else if (firstError.field === "asset") code = PayrollServiceErrorCode.INVALID_ASSET;
