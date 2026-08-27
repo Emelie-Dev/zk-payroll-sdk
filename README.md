@@ -8,6 +8,32 @@ TypeScript SDK for interacting with the ZK Payroll smart contracts.
 npm install @zk-payroll/sdk
 ```
 
+## Quickstart
+
+Minimal examples using fake data — initialize the SDK, validate a payroll
+draft, and read payroll status.
+
+```typescript
+import { PayrollContract, ConfigPresets, DraftBuilder } from "@zk-payroll/sdk";
+
+// 1. Initialize the SDK
+const config = ConfigPresets.testnet()
+  .withContractId("CCONTRACT_ID_EXAMPLE")
+  .build();
+const contract = new PayrollContract(config);
+
+// 2. Validate a payroll draft before submitting it
+const { errors, warnings } = new DraftBuilder()
+  .add({ recipientId: "GABC...EXAMPLE", amount: "100.00", asset: "native" })
+  .validate();
+if (errors.length > 0) {
+  console.error("Draft is invalid:", errors);
+}
+
+// 3. Read payroll status (balance) for an address
+const balance = await contract.getBalance("GABC...EXAMPLE");
+```
+
 ## Usage
 
 The SDK provides configuration presets for common environments to simplify initialization:
