@@ -42,6 +42,8 @@ export type { ErrorCategoryType, ErrorCodeEntry } from "./core/error-codes";
 
 export { IneligibleEmployeeError, BatchEligibilityError } from "./eligibility/errors";
 
+export { ProofReferenceParsingError } from "./proofs/errors";
+
 // ── Backward-compatible aliases ─────────────────────────────────────────────
 import { ZkPayrollError } from "./core/errors";
 
