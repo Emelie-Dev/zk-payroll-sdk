@@ -195,11 +195,21 @@ export * from "./classification";
 // Contract State Indexer
 export * from "./indexer";
 
+// ── Payroll Signing Payload Inspector ───────────────────────────────────────
+export * from "./signing";
+
+// ── Error Code Documentation Generation ─────────────────────────────────────
+export * from "./error-docs";
+
 // Proof Artifact Lifecycle
 export * from "./artifacts";
 
 // Multi-Signer Authorization
 export * from "./authorization";
+
+// ── Local Payload Validation ─────────────────────────────────────────────────
+export { PayrollValidation } from "./core/validation";
+export type { ValidationResult } from "./core/validation";
 
 // ── Payroll Receipts & Verification ─────────────────────────────────────────
 export * from "./receipts";
