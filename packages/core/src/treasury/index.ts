@@ -6,6 +6,13 @@
  */
 
 export { TreasuryReservationClient } from "./TreasuryReservationClient";
+export {
+  MEMO_MAX_LENGTH,
+  MEMO_PREVIEW_LENGTH,
+  validateMemo,
+  formatMemo,
+  previewMemo,
+} from "./memos";
 export type {
   FundingReservation,
   ReservationStatus,
