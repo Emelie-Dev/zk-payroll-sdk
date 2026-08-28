@@ -119,6 +119,39 @@ export type {
   PaymentCancelledEvent,
 } from "./event-parser";
 
+// ── Funding Reservation Event Decoder ────────────────────────────────────────
+export {
+  parseFundingReservationCreatedEvent,
+  parseFundingReservationCreatedEvents,
+} from "./events/reservations";
+export type {
+  FundingReservationCreatedEvent,
+  ReservationAssetAmount,
+} from "./events/types";
+export { ReservationEventParsingError } from "./events/types";
+
+// ── Pause Status ──────────────────────────────────────────────────────────────
+export {
+  normalizePauseStatus,
+  PAUSE_CATEGORIES,
+} from "./pause/status";
+export type {
+  PauseCategory,
+  PauseStatus,
+  RawPauseStatusResponse,
+} from "./pause/status";
+
+// ── Proof Reference Parser ───────────────────────────────────────────────────
+export {
+  parseProofReference,
+  tryParseProofReference,
+  formatProofReference,
+  PROOF_REFERENCE_SEPARATOR,
+  MAX_PROOF_REFERENCE_LENGTH,
+} from "./proofs/reference";
+export type { ParsedProofReference } from "./proofs/reference";
+export { ProofReferenceParsingError } from "./proofs/errors";
+
 // ── Typed Contract Clients ───────────────────────────────────────────────────
 export * from "./clients";
 
