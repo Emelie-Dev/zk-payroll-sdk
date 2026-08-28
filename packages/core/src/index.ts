@@ -124,22 +124,12 @@ export {
   parseFundingReservationCreatedEvent,
   parseFundingReservationCreatedEvents,
 } from "./events/reservations";
-export type {
-  FundingReservationCreatedEvent,
-  ReservationAssetAmount,
-} from "./events/types";
+export type { FundingReservationCreatedEvent, ReservationAssetAmount } from "./events/types";
 export { ReservationEventParsingError } from "./events/types";
 
 // ── Pause Status ──────────────────────────────────────────────────────────────
-export {
-  normalizePauseStatus,
-  PAUSE_CATEGORIES,
-} from "./pause/status";
-export type {
-  PauseCategory,
-  PauseStatus,
-  RawPauseStatusResponse,
-} from "./pause/status";
+export { normalizePauseStatus, PAUSE_CATEGORIES } from "./pause/status";
+export type { PauseCategory, PauseStatus, RawPauseStatusResponse } from "./pause/status";
 
 // ── Proof Reference Parser ───────────────────────────────────────────────────
 export {
@@ -151,6 +141,24 @@ export {
 } from "./proofs/reference";
 export type { ParsedProofReference } from "./proofs/reference";
 export { ProofReferenceParsingError } from "./proofs/errors";
+
+// ── Admin/Lifecycle Event Decoders ───────────────────────────────────────────
+export {
+  decodeEmployerOnboardingEvent,
+  decodeEmployerOnboardingEvents,
+  isEmployerOnboardingEvent,
+} from "./events/employerOnboarding";
+export type { EmployerOnboardedEvent } from "./events/employerOnboarding";
+export {
+  parseOperatorRemovalEvent,
+  parseOperatorRemovalEvents,
+  isOperatorRemovalEvent,
+} from "./events/operatorRemoval";
+export type { OperatorRemovedEvent } from "./events/operatorRemoval";
+export { EventDecodingError } from "./events/types";
+
+// ── Admin UI Helpers ─────────────────────────────────────────────────────────
+export * from "./admin";
 
 // ── Typed Contract Clients ───────────────────────────────────────────────────
 export * from "./clients";
