@@ -1,6 +1,6 @@
 import { PayrollExecutionSummary } from "../summary/types";
 import { ObservedPaymentState, ReconciliationDiffResult } from "./types";
-import { ReconciliationDiffGenerator } from "./ReconciliationDiffGenerator";
+import { generateReconciliationDiff } from "./ReconciliationDiffGenerator";
 
 export interface SnapshotInput {
   executionSummary: PayrollExecutionSummary;
@@ -37,15 +37,15 @@ export interface ReconciliationSnapshot {
 }
 
 export class ReconciliationSnapshotBuilder {
-  private diffGenerator: ReconciliationDiffGenerator;
-
-  constructor() {
-    this.diffGenerator = new ReconciliationDiffGenerator();
-  }
-
-  async buildSnapshot(input: SnapshotInput, metadata?: Record<string, unknown>): Promise<ReconciliationSnapshot> {
+  async buildSnapshot(
+    input: SnapshotInput,
+    metadata?: Record<string, unknown>
+  ): Promise<ReconciliationSnapshot> {
     const expectedPayments = this.extractExpectedPayments(input.executionSummary);
-    const reconciliationDiff = await this.diffGenerator.generateDiff(expectedPayments, input.observedPayments);
+    const reconciliationDiff = generateReconciliationDiff(
+      input.executionSummary,
+      input.observedPayments
+    );
 
     const summaryMetrics = this.calculateSummaryMetrics(reconciliationDiff);
     const observedMetrics = this.calculateObservedMetrics(input.observedPayments);
@@ -67,9 +67,10 @@ export class ReconciliationSnapshotBuilder {
         failedCount: observedMetrics.failed,
         notFoundCount: observedMetrics.notFound,
         totalObserved: observedMetrics.total,
-        observedAt: input.observedPayments.length > 0
-          ? Math.max(...input.observedPayments.map((p) => p.observedAt))
-          : Date.now(),
+        observedAt:
+          input.observedPayments.length > 0
+            ? Math.max(...input.observedPayments.map((p) => p.observedAt))
+            : Date.now(),
       },
       reconciliationDiff,
       summaryMetrics,
@@ -91,7 +92,8 @@ export class ReconciliationSnapshotBuilder {
       amountMismatchChange:
         snapshot2.summaryMetrics.amountMismatchCount - snapshot1.summaryMetrics.amountMismatchCount,
       missingPaymentsChange:
-        snapshot2.summaryMetrics.missingPaymentsCount - snapshot1.summaryMetrics.missingPaymentsCount,
+        snapshot2.summaryMetrics.missingPaymentsCount -
+        snapshot1.summaryMetrics.missingPaymentsCount,
     };
 
     const isImproving = metricsChange.discrepancyCountChange < 0;
@@ -138,7 +140,9 @@ export class ReconciliationSnapshotBuilder {
     return payments;
   }
 
-  private calculateSummaryMetrics(diff: ReconciliationDiffResult): ReconciliationSnapshot["summaryMetrics"] {
+  private calculateSummaryMetrics(
+    diff: ReconciliationDiffResult
+  ): ReconciliationSnapshot["summaryMetrics"] {
     const totalEntries = diff.entries.length;
     const matchCount = diff.counts.match || 0;
     const matchPercentage = totalEntries > 0 ? Math.round((matchCount / totalEntries) * 100) : 100;
