@@ -2,10 +2,7 @@ export { PayrollRegistryClient } from "./PayrollRegistryClient";
 export { SalaryCommitmentClient } from "./SalaryCommitmentClient";
 export { ProofVerifierClient } from "./ProofVerifierClient";
 export { PaymentExecutorClient } from "./PaymentExecutorClient";
-export type {
-  ExecutePaymentResponse,
-  SchedulePaymentResponse,
-} from "./PaymentExecutorClient";
+export type { ExecutePaymentResponse, SchedulePaymentResponse } from "./PaymentExecutorClient";
 export type {
   ClientOptions,
   RegistryEntry,

@@ -1,5 +1,26 @@
-import { rpc, xdr, nativeToScVal, Address, Keypair, Networks } from "@stellar/stellar-sdk";
+import {
+  rpc,
+  xdr,
+  nativeToScVal,
+  scValToNative,
+  Address,
+  Keypair,
+  Networks,
+} from "@stellar/stellar-sdk";
 import { BaseContractWrapper } from "../adapters/BaseContractWrapper";
+
+function toBytesScVal(value: string): xdr.ScVal {
+  // Accept hex strings (with or without 0x) or plain utf8 strings.
+  // Stellar SDK nativeToScVal with type "bytes" expects Buffer/Uint8Array.
+  try {
+    const trimmed = value.replace(/^0x/, "");
+    const isHex = /^[0-9a-fA-F]+$/.test(trimmed) && trimmed.length % 2 === 0;
+    const buf = isHex ? Buffer.from(trimmed, "hex") : Buffer.from(value, "utf8");
+    return nativeToScVal(buf, { type: "bytes" });
+  } catch {
+    return nativeToScVal(value, { type: "string" });
+  }
+}
 import {
   ClientOptions,
   CommitmentEntry,
@@ -11,24 +32,16 @@ import {
 export class SalaryCommitmentClient extends BaseContractWrapper {
   private readonly networkPassphrase: string;
 
-  constructor(
-    server: rpc.Server,
-    contractId: string,
-    options?: ClientOptions
-  ) {
+  constructor(server: rpc.Server, contractId: string, options?: ClientOptions) {
     super(server, contractId);
     this.networkPassphrase = options?.networkPassphrase ?? Networks.TESTNET;
   }
 
-  async commit(
-    request: CommitRequest,
-    signer: Keypair,
-    network?: string
-  ): Promise<void> {
+  async commit(request: CommitRequest, signer: Keypair, network?: string): Promise<void> {
     const args: xdr.ScVal[] = [
       new Address(request.employer).toScVal(),
       new Address(request.employee).toScVal(),
-      nativeToScVal(request.commitmentHash, { type: "bytes" }),
+      toBytesScVal(request.commitmentHash),
       nativeToScVal(request.cycleId, { type: "u64" }),
     ];
 
@@ -48,7 +61,12 @@ export class SalaryCommitmentClient extends BaseContractWrapper {
       nativeToScVal(cycleId, { type: "u64" }),
     ];
 
-    const result = await this.invoke("get_commitment", args, signer, network ?? this.networkPassphrase);
+    const result = await this.invoke(
+      "get_commitment",
+      args,
+      signer,
+      network ?? this.networkPassphrase
+    );
     return this.decodeCommitmentEntry(result);
   }
 
@@ -67,7 +85,7 @@ export class SalaryCommitmentClient extends BaseContractWrapper {
           }),
           new xdr.ScMapEntry({
             key: nativeToScVal("commitment_hash", { type: "symbol" }),
-            val: nativeToScVal(item.commitmentHash, { type: "bytes" }),
+            val: toBytesScVal(item.commitmentHash),
           }),
           new xdr.ScMapEntry({
             key: nativeToScVal("cycle_id", { type: "symbol" }),
@@ -77,10 +95,7 @@ export class SalaryCommitmentClient extends BaseContractWrapper {
       )
     );
 
-    const args: xdr.ScVal[] = [
-      new Address(employer).toScVal(),
-      commitVec,
-    ];
+    const args: xdr.ScVal[] = [new Address(employer).toScVal(), commitVec];
 
     await this.invoke("batch_commit", args, signer, network ?? this.networkPassphrase);
   }
@@ -100,7 +115,12 @@ export class SalaryCommitmentClient extends BaseContractWrapper {
       this.encodeProofStruct(proof),
     ];
 
-    const result = await this.invoke("verify_commitment", args, signer, network ?? this.networkPassphrase);
+    const result = await this.invoke(
+      "verify_commitment",
+      args,
+      signer,
+      network ?? this.networkPassphrase
+    );
     return result.b() === true;
   }
 
@@ -128,12 +148,14 @@ export class SalaryCommitmentClient extends BaseContractWrapper {
     signer: Keypair,
     network?: string
   ): Promise<number> {
-    const args: xdr.ScVal[] = [
-      new Address(employer).toScVal(),
-      new Address(employee).toScVal(),
-    ];
+    const args: xdr.ScVal[] = [new Address(employer).toScVal(), new Address(employee).toScVal()];
 
-    const result = await this.invoke("get_commitment_count", args, signer, network ?? this.networkPassphrase);
+    const result = await this.invoke(
+      "get_commitment_count",
+      args,
+      signer,
+      network ?? this.networkPassphrase
+    );
     return Number(result.u32());
   }
 
@@ -161,17 +183,13 @@ export class SalaryCommitmentClient extends BaseContractWrapper {
   }
 
   private encodeProofStruct(proof: ProofStruct): xdr.ScVal {
-    const piA = xdr.ScVal.scvVec(
-      proof.pi_a.map((s) => nativeToScVal(s, { type: "string" }))
-    );
+    const piA = xdr.ScVal.scvVec(proof.pi_a.map((s) => nativeToScVal(s, { type: "string" })));
     const piB = xdr.ScVal.scvVec(
       proof.pi_b.map((pair) =>
         xdr.ScVal.scvVec(pair.map((s) => nativeToScVal(s, { type: "string" })))
       )
     );
-    const piC = xdr.ScVal.scvVec(
-      proof.pi_c.map((s) => nativeToScVal(s, { type: "string" }))
-    );
+    const piC = xdr.ScVal.scvVec(proof.pi_c.map((s) => nativeToScVal(s, { type: "string" })));
     const publicSignals = xdr.ScVal.scvVec(
       proof.publicSignals.map((s) => nativeToScVal(s, { type: "string" }))
     );
@@ -203,14 +221,32 @@ export class SalaryCommitmentClient extends BaseContractWrapper {
   }
 
   private scValToBigInt(scVal: xdr.ScVal): bigint {
-    const i128 = scVal.i128();
-    if (i128) {
-      const hi = BigInt(i128.hi());
-      const lo = BigInt(i128.lo());
-      return (hi << 64n) | lo;
-    }
-    const u64 = scVal.u64();
-    if (u64) return BigInt(u64);
+    try {
+      const native = scValToNative(scVal);
+      if (typeof native === "bigint") return native;
+      if (typeof native === "number") return BigInt(native);
+      if (typeof native === "string") {
+        try {
+          return BigInt(native);
+        } catch {
+          return 0n;
+        }
+      }
+    } catch {}
+    try {
+      const i128 = scVal.i128();
+      if (i128) {
+        const hi = BigInt((i128.hi() as unknown as { toString: () => string }).toString());
+        const lo = BigInt((i128.lo() as unknown as { toString: () => string }).toString());
+        return (hi << 64n) | lo;
+      }
+    } catch {}
+    try {
+      const u64 = scVal.u64();
+      if (u64) {
+        return BigInt((u64 as unknown as { toString: () => string }).toString());
+      }
+    } catch {}
     return 0n;
   }
 }

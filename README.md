@@ -189,23 +189,63 @@ await client.cancel(scheduled.paymentId, signer);
 const payments = await client.getPendingPayments("G...", 0n, 20, signer);
 ```
 
+## Environment Variables
+
+The SDK and its examples read configuration from environment variables so that
+contracts, RPC endpoints, and circuit artifacts can be swapped per environment
+without code changes. Never commit secrets (private keys) to version control.
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `STELLAR_RPC_URL` / `SOROBAN_RPC_URL` | No | `https://soroban-testnet.stellar.org` | Soroban RPC endpoint for contract calls |
+| `PAYROLL_CONTRACT_ID` / `CONTRACT_ID` | Yes for live calls | `""` | Deployed Payroll contract address (`C...`) |
+| `REGISTRY_CONTRACT_ID` | No | — | PayrollRegistry contract address |
+| `SALARY_COMMITMENT_CONTRACT_ID` | No | — | SalaryCommitment contract address |
+| `PROOF_VERIFIER_CONTRACT_ID` | No | — | ProofVerifier contract address |
+| `PAYMENT_EXECUTOR_CONTRACT_ID` | No | — | PaymentExecutor contract address |
+| `WASM_URL` | No* | — | URL or local path to the circuit `.wasm` artifact |
+| `ZKEY_URL` | No* | — | URL or local path to the proving key `.zkey` artifact |
+| `NETWORK_PASSPHRASE` / `STELLAR_NETWORK` | No | `Test SDF Network ; September 2015` | Stellar network passphrase (`testnet` / `mainnet`) |
+| `SIGNER_SECRET` / `STELLAR_SECRET_KEY` | No | — | Secret key for local signing (use only in local dev / tests) |
+| `ARTIFACT_CACHE_TTL` | No | `86400` | Cache TTL in seconds for proof artifacts |
+
+\* Required when using `SnarkjsProofGenerator` for real proof generation.
+See [Setup Guide](./docs/setup.md) for `.env` examples and local quick-start.
+
+**Privacy note:** The SDK never logs `recipient`, `amount`, `witness`, or
+`privateKey` values. Logging hooks receive `[redacted]` for those fields via
+`redactSensitive` – even when `STELLAR_SECRET_KEY` is set, the secret is
+excluded from logs, exports, telemetry, and events.
+
 ## Documentation
 
+- [Setup Guide](./docs/setup.md) - Environment variables and local development setup
 - [API Reference](./docs/API.md) - Complete API documentation
 - [ZK Proof Generation](./docs/ZK_PROOF_GENERATION.md) - Detailed proof generation guide
+- [Examples](./examples/README.md) - Runnable examples and setup steps
 
 ## Development
 
 ```bash
-# Install dependencies
+# 1. Clone and install
+git clone https://github.com/your-org/zk-payroll-sdk.git
+cd zk-payroll-sdk
 npm install
 
-# Build
-npm run build
+# 2. Configure environment (copy and edit)
+cp .env.example .env
+# Edit .env with your RPC URL, contract IDs and artifact URLs
 
-# Run tests
+# 3. Build, typecheck, lint, and test
+npm run build
+npm run typecheck
+npm run lint
 npm test
 
-# Lint
-npm run lint
+# Or run via Turbo in the monorepo root
+npm run build -w packages/core
+npm run test -w packages/core
 ```
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) and [docs/setup.md](./docs/setup.md) for
+full contributor workflow, pre-commit hooks, and troubleshooting.
