@@ -81,10 +81,10 @@ export class SerializationError extends ZkPayrollError {
 
 /** Error codes for PayrollService validation/orchestration failures */
 export const PayrollServiceErrorCode = {
-  PROOF_GENERATION_FAILED: 2001,
-  INVALID_RECIPIENT: 2002,
-  INVALID_AMOUNT: 2003,
-  INVALID_ASSET: 2004,
+  PROOF_GENERATION_FAILED: "2001",
+  INVALID_RECIPIENT: "2002",
+  INVALID_AMOUNT: "2003",
+  INVALID_ASSET: "2004",
 } as const;
 
 export type PayrollServiceErrorCode =
