@@ -2,6 +2,33 @@
 
 ## Classes
 
+## Idempotent payroll retries
+
+Use `idempotencyKey` when submitting payroll payments so client-side retries do not create duplicate submissions.
+
+```typescript
+import { PayrollService, createPaymentIdempotencyKey } from "@zk-payroll/sdk";
+
+const key = createPaymentIdempotencyKey({
+  recipient: "G...",
+  amount: 1000n,
+  asset: "native",
+});
+
+const result = await service.processPayment({
+  recipient: "G...",
+  amount: 1000n,
+  asset: "native",
+  idempotencyKey: key,
+});
+```
+
+### Recommendation
+
+- Generate one idempotency key per user intent (for example, button click / request ID)
+- Reuse the same key for retries of that same intent
+- Use a new key for genuinely new payment requests
+
 ### Typed Contract Clients
 
 The SDK provides fully typed client wrappers for the core ZK Payroll Soroban contracts. Each client extends `BaseContractWrapper` and handles XDR encoding/decoding automatically.
@@ -552,7 +579,7 @@ const proof = await ZKProofGenerator.generateSnarkjsProof(witness, config);
 
 ## Error Handling
 
-All errors are wrapped in `PayrollError`:
+All errors are wrapped in `ZkPayrollError` subclasses:
 
 ```typescript
 import { PayrollError } from "@zk-payroll/sdk";
@@ -565,6 +592,156 @@ try {
   }
 }
 ```
+
+## Contract Metadata Discovery
+
+The SDK provides helpers for discovering and validating deployed contract metadata across common Stellar environments, reducing manual wiring when connecting to testnet, mainnet, or local standalone networks.
+
+### `getContractMetadata(environment, overrides?)`
+
+Returns the default metadata for a known environment, with optional field overrides.
+
+| Param | Type | Description |
+|---|---|---|
+| `environment` | `string` | Environment name (`"testnet"`, `"mainnet"`, or `"standalone"`) |
+| `overrides` | `Partial<ContractMetadata>` | Optional fields to merge on top of defaults |
+
+**Throws** if the environment name is not recognized.
+
+```typescript
+import { getContractMetadata } from "@zk-payroll/sdk";
+
+// Get testnet defaults
+const metadata = getContractMetadata("testnet");
+// {
+//   networkUrl: "https://soroban-testnet.stellar.org",
+//   networkPassphrase: "Test SDF Network ; September 2015",
+// }
+
+// Override with deployed contract IDs
+const deployed = getContractMetadata("testnet", {
+  payrollRegistryId: "CA3D5K7UZH7G4FZ...",
+  salaryCommitmentId: "CB3D5K7UZH7G4FZ...",
+  proofVerifierId: "CC3D5K7UZH7G4FZ...",
+  paymentExecutorId: "CD3D5K7UZH7G4FZ...",
+  adminPublicKey: "SAV75E2NK7Q5J2Y...",
+});
+```
+
+### `validateContractMetadata(metadata)`
+
+Validates a `ContractMetadata` object and returns a structured result with actionable errors.
+
+| Param | Type | Description |
+|---|---|---|
+| `metadata` | `ContractMetadata` | The metadata to validate |
+
+Returns `{ valid: boolean, errors: MetadataValidationError[] }`. Each error has `field`, `message`, and `code` properties.
+
+```typescript
+import { validateContractMetadata } from "@zk-payroll/sdk";
+
+const result = validateContractMetadata({
+  networkUrl: "https://soroban-testnet.stellar.org",
+  networkPassphrase: "Test SDF Network ; September 2015",
+  payrollRegistryId: "CA3D5K7UZH7G4FZ...",
+});
+
+if (!result.valid) {
+  for (const err of result.errors) {
+    console.error(`[${err.code}] ${err.field}: ${err.message}`);
+  }
+}
+```
+
+**Validation checks:**
+- `networkUrl` is a valid HTTP(S) URL
+- `networkPassphrase` matches a known Stellar network
+- `payrollRegistryId`, `salaryCommitmentId`, `proofVerifierId`, `paymentExecutorId` are valid Soroban contract ID format (starts with `C`, 56 alphanumeric characters)
+- `adminPublicKey` is a valid Stellar secret key format (starts with `S`, 56 characters)
+- Required fields (`networkUrl`, `networkPassphrase`) are present and non-empty
+
+### `isKnownEnvironment(environment)`
+
+Returns `true` if the given environment name is recognized.
+
+```typescript
+import { isKnownEnvironment } from "@zk-payroll/sdk";
+
+if (isKnownEnvironment(process.env.STELLAR_ENV)) {
+  // proceed
+}
+```
+
+### `listKnownEnvironments()`
+
+Returns the list of known environment descriptors.
+
+```typescript
+import { listKnownEnvironments } from "@zk-payroll/sdk";
+
+const envs = listKnownEnvironments();
+// [
+//   { name: "testnet",  label: "Stellar Testnet" },
+//   { name: "mainnet",  label: "Stellar Mainnet" },
+//   { name: "standalone", label: "Local Standalone" },
+// ]
+```
+
+### `buildClientConfig(metadata)`
+
+Extracts `networkUrl` and a contract IDs map from a metadata object, suitable for constructing typed contract clients.
+
+```typescript
+import {
+  buildClientConfig,
+  getContractMetadata,
+  rpc,
+  PayrollRegistryClient,
+  Keypair,
+} from "@zk-payroll/sdk";
+
+const metadata = getContractMetadata("testnet", {
+  payrollRegistryId: "CA3D5K7UZH7G4FZ...",
+});
+
+const config = buildClientConfig(metadata);
+const server = new rpc.Server(config.networkUrl);
+const signer = Keypair.fromSecret("SAV75E2NK7Q5J2Y...");
+
+const registry = new PayrollRegistryClient(
+  server,
+  config.contractIds.payrollRegistryId
+);
+
+await registry.getRegistry("GEMPLOYER...", "GEMPLOYEE...", signer);
+```
+
+### `ContractMetadata`
+
+```typescript
+interface ContractMetadata {
+  networkUrl: string;
+  networkPassphrase: string;
+  payrollRegistryId?: string;
+  salaryCommitmentId?: string;
+  proofVerifierId?: string;
+  paymentExecutorId?: string;
+  adminPublicKey?: string;
+}
+```
+
+### `KNOWN_ENVIRONMENTS`
+
+A static array of `KnownEnvironment` entries defining the built-in network presets. Each entry has:
+
+| Field | Type | Description |
+|---|---|---|
+| `name` | `string` | Machine-readable key (`"testnet"`, `"mainnet"`, `"standalone"`) |
+| `label` | `string` | Human-readable label |
+| `metadata` | `ContractMetadata` | Default network settings |
+
+---
 
 ## See Also
 

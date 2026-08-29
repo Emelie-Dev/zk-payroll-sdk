@@ -4,6 +4,15 @@ Complete guide for testing applications built with the ZK Payroll SDK.
 
 ## Overview
 
+### Supported runtime targets
+
+The SDK is tested in two runtime environments:
+
+| Target               | How it’s tested                               | Notes                                                       |
+| -------------------- | --------------------------------------------- | ----------------------------------------------------------- |
+| Node.js              | Jest with `testEnvironment: "node"` (default) | No DOM globals are required.                                |
+| Browser-like (jsdom) | Jest with `testEnvironment: "jsdom"`          | Enables `window`/`document` and `localStorage`-style flows. |
+
 The ZK Payroll SDK provides a comprehensive mocking system that allows you to write unit tests without needing a live Stellar testnet or local node. This enables fast, reliable, and predictable testing.
 
 ## Installation
@@ -240,6 +249,7 @@ afterEach(() => {
 ```
 
 This clears:
+
 - All expectations
 - Call history
 - Call counts
@@ -249,11 +259,11 @@ This clears:
 ### Testing PayrollService
 
 ```typescript
-import { 
-  MockContractEnvironment, 
-  MockPayrollContract, 
+import {
+  MockContractEnvironment,
+  MockPayrollContract,
   PayrollService,
-  PayrollError 
+  PayrollError,
 } from "@zk-payroll/sdk";
 
 describe("PayrollService", () => {
@@ -278,19 +288,17 @@ describe("PayrollService", () => {
 
     expect(txHash).toBe("tx_abc123");
     expect(mockEnv.getCallCount("deposit")).toBe(1);
-    
+
     const history = mockEnv.getCallHistory("deposit");
     expect(history[0].args).toEqual([5000n]);
   });
 
   it("should handle payment failures", async () => {
-    mockEnv.expectInvoke("deposit").toFail(
-      new PayrollError("Insufficient balance", 400)
-    );
+    mockEnv.expectInvoke("deposit").toFail(new PayrollError("Insufficient balance", 400));
 
-    await expect(
-      service.processPayment("GRECIPIENT", 5000n)
-    ).rejects.toThrow("Insufficient balance");
+    await expect(service.processPayment("GRECIPIENT", 5000n)).rejects.toThrow(
+      "Insufficient balance"
+    );
   });
 
   it("should filter transactions correctly", () => {
@@ -342,9 +350,7 @@ describe("Balance Checks", () => {
   it("should handle balance query errors", async () => {
     mockEnv.expectInvoke("getBalance").toFail("RPC node unavailable");
 
-    await expect(
-      mockContract.getBalance("GALICE")
-    ).rejects.toThrow("RPC node unavailable");
+    await expect(mockContract.getBalance("GALICE")).rejects.toThrow("RPC node unavailable");
   });
 });
 ```
@@ -460,25 +466,59 @@ mockEnv.expectInvoke("getBalance").toReturn(1000n); // ✅ Correct
 
 ### MockContractEnvironment
 
-| Method | Description |
-|--------|-------------|
-| `expectInvoke(methodName)` | Configure expectations for a method |
-| `verify()` | Ensure all expectations were met |
-| `reset()` | Clear all expectations and history |
-| `wasCalled(methodName)` | Check if method was called |
-| `getCallCount(methodName)` | Get number of invocations |
-| `getCallHistory(methodName)` | Get detailed call history |
-| `setStrictMode(enabled)` | Enable/disable strict mode |
-| `getAllExpectations()` | Get all configured expectations |
+| Method                       | Description                         |
+| ---------------------------- | ----------------------------------- |
+| `expectInvoke(methodName)`   | Configure expectations for a method |
+| `verify()`                   | Ensure all expectations were met    |
+| `reset()`                    | Clear all expectations and history  |
+| `wasCalled(methodName)`      | Check if method was called          |
+| `getCallCount(methodName)`   | Get number of invocations           |
+| `getCallHistory(methodName)` | Get detailed call history           |
+| `setStrictMode(enabled)`     | Enable/disable strict mode          |
+| `getAllExpectations()`       | Get all configured expectations     |
 
 ### ExpectationBuilder
 
-| Method | Description |
-|--------|-------------|
-| `toReturn(value)` | Return a specific value |
-| `toSucceed(value?)` | Mark as successful |
-| `toFail(error)` | Throw an error |
-| `toCall(handler)` | Execute custom function |
+| Method              | Description             |
+| ------------------- | ----------------------- |
+| `toReturn(value)`   | Return a specific value |
+| `toSucceed(value?)` | Mark as successful      |
+| `toFail(error)`     | Throw an error          |
+| `toCall(handler)`   | Execute custom function |
+
+## Flaky Network Simulation
+
+The SDK provides a simulation layer to model unstable network conditions (intermittent timeouts, high latency, and partial failures) when calling Soroban RPC endpoints. This allows you to test retry mechanisms and transaction watcher resilience under realistic failure conditions.
+
+### Usage
+
+Use `createFlakyServer` to wrap an existing `rpc.Server` instance (or its mock):
+
+```typescript
+import { rpc } from "@stellar/stellar-sdk";
+import { createFlakyServer, TransactionWatcher } from "@zk-payroll/core";
+
+const realServer = new rpc.Server("https://soroban-testnet.stellar.org");
+
+// Wrap the server with flakiness rules
+const flakyServer = createFlakyServer(realServer, {
+  failFirstAttempts: 2,                  // Fail the first 2 attempts
+  failureRate: 0.1,                      // 10% chance of failure on subsequent attempts
+  delayMs: 150,                          // Add a flat 150ms latency to every call
+  targetMethods: ["getTransaction"],     // Only inject flakiness into getTransaction calls
+  errorFactory: () => new Error("RPC down"), // Throw this custom error
+});
+
+// Now pass the flaky server to client classes or watchers
+const watcher = new TransactionWatcher(flakyServer);
+```
+
+### Design & Simulation Assumptions
+
+1. **Proxy-based Interception**: The simulation layer uses ES6 Proxies to wrap `rpc.Server`. It intercepts function calls while passing non-functional properties through directly to the underlying server target.
+2. **Method-Level Isolation**: Attempt counters (e.g. for `failFirstAttempts`) are tracked individually per method name. If you call `getAccount` and `getTransaction`, their attempt numbers are incremented independently.
+3. **Underlying Error Propagation**: Simulated failures mimic network-level exceptions (e.g. HTTP timeouts or server unreachable errors). They are thrown as standard JS `Error` instances, allowing the SDK's internal retry helpers and error mapping blocks to catch and parse them normally.
+4. **Deterministic and Stochastic Modes**: You can mix deterministic failures (like `failFirstAttempts` for test validations) with stochastic failures (like `failureRate` for chaos testing).
 
 ## Troubleshooting
 
@@ -533,6 +573,7 @@ mockEnv.expectInvoke("getBalance").toReturn(1000n);
 ## Support
 
 If you encounter issues or have questions:
+
 - Check the [Contributing Guide](../CONTRIBUTING.md)
 - Open an issue on GitHub
 - Review existing test examples in the repository

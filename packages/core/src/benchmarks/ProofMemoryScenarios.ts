@@ -65,10 +65,7 @@ export function simulateWarmArtifactLoad(
  * Populates an ArtifactCache with one entry — the state after a successful
  * first fetch has been stored.
  */
-export function buildArtifactCache(
-  sizes: ArtifactSizes,
-  key = "circuit"
-): ArtifactCache {
+export function buildArtifactCache(sizes: ArtifactSizes, key = "circuit"): ArtifactCache {
   const cache: ArtifactCache = new Map();
   cache.set(key, {
     wasm: new ArrayBuffer(sizes.wasmBytes),
@@ -81,11 +78,7 @@ export function buildArtifactCache(
  * Serialises a proof witness to JSON — mirrors `SnarkjsProofGenerator.witnessKey()`.
  * @param extraFields - Additional padding fields to grow the witness object.
  */
-export function encodeWitness(
-  recipient: string,
-  amount: bigint,
-  extraFields = 0
-): string {
+export function encodeWitness(recipient: string, amount: bigint, extraFields = 0): string {
   const w: Record<string, string> = {
     recipient,
     amount: amount.toString(),
@@ -99,10 +92,7 @@ export function encodeWitness(
 
 /** Builds a minimal ProofPayload JSON string — returned by the proof cache. */
 export function buildProofJson(publicSignalsCount = 3): string {
-  const sigs = Array.from(
-    { length: publicSignalsCount },
-    (_, i) => String((i + 1) * 111_111_111)
-  );
+  const sigs = Array.from({ length: publicSignalsCount }, (_, i) => String((i + 1) * 111_111_111));
   return JSON.stringify({
     proof: {
       pi_a: ["1111111111111111111", "2222222222222222222"],
@@ -137,10 +127,7 @@ export async function coldArtifactLoad(
  * **Warm artifact load** — cache is populated.
  * Reads the existing entry; no new buffers are allocated.
  */
-export async function warmArtifactLoad(
-  cache: ArtifactCache,
-  key = "circuit"
-): Promise<void> {
+export async function warmArtifactLoad(cache: ArtifactCache, key = "circuit"): Promise<void> {
   const entry = simulateWarmArtifactLoad(cache, key);
   // Touch a field so V8 doesn't optimise the lookup away entirely.
   void entry?.wasm.byteLength;
@@ -175,10 +162,7 @@ export async function coldProofGeneration(
  * Looks up the cached proof string and parses it (mirrors JSON.parse in
  * `SnarkjsProofGenerator.generateProof`).
  */
-export async function warmProofGeneration(
-  proofCache: ProofCache,
-  key?: string
-): Promise<void> {
+export async function warmProofGeneration(proofCache: ProofCache, key?: string): Promise<void> {
   const cacheKey = key ?? `proof:${encodeWitness("GALICE_FIXTURE", 1_000_000n)}`;
   const cached = proofCache.get(cacheKey);
   if (cached) {
@@ -208,10 +192,7 @@ export async function concurrentColdGeneration(
  * **Batch proof generation** — repeated proof generation for a list of
  * witnesses sharing a warm artifact cache.
  */
-export async function batchProofGeneration(
-  batchSize: number,
-  sizes: ArtifactSizes
-): Promise<void> {
+export async function batchProofGeneration(batchSize: number, sizes: ArtifactSizes): Promise<void> {
   const artifactCache = buildArtifactCache(sizes);
   const proofCache: ProofCache = new Map();
 

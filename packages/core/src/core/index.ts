@@ -1,5 +1,15 @@
 export { ZKProofGenerator } from "../crypto/proofs";
 export { SnarkjsProofGenerator } from "../crypto/SnarkjsProofGenerator";
 export * from "../crypto/IProofGenerator";
+export * from "../crypto/IArtifactResolver";
+export { LocalArtifactResolver } from "../crypto/LocalArtifactResolver";
+export type { LocalArtifactResolverConfig } from "../crypto/LocalArtifactResolver";
+export { RemoteArtifactResolver } from "../crypto/RemoteArtifactResolver";
+export type { RemoteArtifactResolverConfig } from "../crypto/RemoteArtifactResolver";
+export * from "../crypto/ArtifactErrors";
 export * from "./errors";
+export * from "./retry";
 export * from "../cache";
+export * from "./retry";
+export * from "./idempotency";
+export * from "./concurrency";

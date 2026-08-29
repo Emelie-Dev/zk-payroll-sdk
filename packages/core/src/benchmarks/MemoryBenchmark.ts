@@ -177,16 +177,12 @@ export function formatTable(baseline: BenchmarkBaseline): string {
     String(r.runs),
   ]);
 
-  const widths = headers.map((h, i) =>
-    Math.max(h.length, ...rows.map((row) => row[i].length))
-  );
+  const widths = headers.map((h, i) => Math.max(h.length, ...rows.map((row) => row[i].length)));
 
   const cell = (s: string, w: number) => ` ${s.padEnd(w)} `;
   const divider = widths.map((w) => "-".repeat(w + 2)).join("+");
   const headerRow = headers.map((h, i) => cell(h, widths[i])).join("|");
-  const dataRows = rows.map((row) =>
-    row.map((c, i) => cell(c, widths[i])).join("|")
-  );
+  const dataRows = rows.map((row) => row.map((c, i) => cell(c, widths[i])).join("|"));
 
   const lines = [
     `Memory Benchmark Baseline — ${baseline.generatedAt}`,

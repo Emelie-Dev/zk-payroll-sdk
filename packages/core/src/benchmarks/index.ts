@@ -6,11 +6,7 @@ export {
   formatTable,
 } from "./MemoryBenchmark";
 
-export type {
-  MemorySample,
-  BenchmarkResult,
-  BenchmarkBaseline,
-} from "./MemoryBenchmark";
+export type { MemorySample, BenchmarkResult, BenchmarkBaseline } from "./MemoryBenchmark";
 
 export {
   ARTIFACT_SIZES,
