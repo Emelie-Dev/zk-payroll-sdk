@@ -24,4 +24,5 @@ export type {
   DraftMetadata,
   EncryptedDraftPackage,
   RedactedDraftPreview,
+  SensitiveFieldConfig,
 } from "./EncryptedDraftSerializer";

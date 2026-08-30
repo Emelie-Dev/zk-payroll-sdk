@@ -325,18 +325,17 @@ export const ERROR_CODE_REGISTRY: Record<string, ErrorCodeEntry> = {
   // ── Eligibility ──────────────────────────────────────────────────────────
   INELIGIBLE_EMPLOYEE_RECORD: {
     category: ErrorCategory.ELIGIBILITY,
-    meaning:
-      "An employee record failed eligibility evaluation during strict payroll processing.",
+    meaning: "One or more employee records failed eligibility validation checks.",
     retryable: false,
     suggestedMessage:
-      "This employee record is ineligible for payroll resolution. Review the reason codes and correct the record before retrying.",
+      "Employee record is ineligible for payroll processing. Check employee status and requirements.",
   },
   BATCH_ELIGIBILITY_FAILED: {
     category: ErrorCategory.ELIGIBILITY,
-    meaning: "A payroll batch contains one or more ineligible employee records.",
+    meaning: "Batch employee eligibility validation failed.",
     retryable: false,
     suggestedMessage:
-      "The batch contains ineligible employee records. Review the reason code summary and correct or exclude the affected records before retrying.",
+      "Batch eligibility check failed. Review individual employee eligibility statuses.",
   },
 };
 
