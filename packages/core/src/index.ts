@@ -181,3 +181,19 @@ export * from "./indexer";
 
 // Proof Artifact Lifecycle
 export * from "./artifacts";
+
+// Treasury Checkpoints & Report Parser (#405)
+export * from "./treasury/checkpoints";
+export * from "./reconciliation/report";
+
+// Approval Invalidation Analyzer (#404)
+export * from "./signing/invalidationAnalyzer";
+export * from "./policy/types";
+
+// Obligation Snapshot Planner (#403)
+export * from "./obligations/snapshotPlanner";
+export * from "./privacy/redaction";
+
+// Employee Reference ID Validator (#388)
+export * from "./employees/referenceId";
+
