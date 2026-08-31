@@ -220,7 +220,9 @@ excluded from logs, exports, telemetry, and events.
 ## Documentation
 
 - [Setup Guide](./docs/setup.md) - Environment variables and local development setup
+- [Troubleshooting Guide](./docs/TROUBLESHOOTING.md) - Fixes for common install, build, and test failures
 - [API Reference](./docs/API.md) - Complete API documentation
+- [Pagination Helpers](./docs/pagination.md) - Cursor- and offset-based pagination for payroll history and audit records
 - [ZK Proof Generation](./docs/ZK_PROOF_GENERATION.md) - Detailed proof generation guide
 - [Examples](./examples/README.md) - Runnable examples and setup steps
 
