@@ -1,7 +1,10 @@
+import { PayrollService } from "../src";
 import {
   PayrollReceiptVerificationError,
-  PayrollService,
+  // PayrollService,
   ReceiptVerificationCode,
+  assertValidPayrollReceipt,
+  canonicalizeMetadata,
   computeMetadataDigest,
   computeMetadataDigestAsync,
   createPayrollReceipt,
@@ -11,12 +14,13 @@ import {
   verifyPayrollReceipt,
   verifyPayrollReceiptAsync,
   verifyPayrollReceiptBatch,
-} from "../src";
+  PayrollSettlementStatus,
+} from "../src/receipts";
 
 type PayrollReceipt = {
   receiptId: string;
   payrollId: string;
-  settlementStatus: string;
+  settlementStatus: PayrollSettlementStatus;
   transactionReference:
     | string
     | {

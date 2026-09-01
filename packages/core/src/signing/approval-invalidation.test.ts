@@ -1,5 +1,5 @@
 import { analyzeApprovalInvalidation } from "./invalidationAnalyzer";
-import { PayrollDraft } from "../policy/types";
+import { CompiledPayrollPolicy, PayrollDraft } from "../policy/types";
 
 describe("Approval Invalidation Analyzer (#404)", () => {
   const basePolicy = {
@@ -10,18 +10,18 @@ describe("Approval Invalidation Analyzer (#404)", () => {
 
   const sampleDraft: PayrollDraft = {
     draftId: "draft-001",
-    version: 1,
+    // version: 1,
     totalAmount: "50000",
     asset: "USDC",
     recipients: [
-      { id: "e1", amount: "30000", recipientAddress: "GAAA..." },
-      { id: "e2", amount: "20000", recipientAddress: "GBBB..." },
+      { amount: "30000", recipientId: "GAAA..." },
+      { amount: "20000", recipientId: "GBBB..." },
     ],
     scheduleTimestamp: "1700000000",
-    policy: basePolicy,
+    policy: basePolicy as never as CompiledPayrollPolicy,
     approvals: [
-      { approver: "admin1", signature: "sig1", approvedAt: "1699990000" },
-      { approver: "admin2", signature: "sig2", approvedAt: "1699990100" },
+      { approverId: "admin1", signature: "sig1", approvedAt: "1699990000" },
+      { approverId: "admin2", signature: "sig2", approvedAt: "1699990100" },
     ],
   };
 
@@ -33,7 +33,7 @@ describe("Approval Invalidation Analyzer (#404)", () => {
   });
 
   it("detects amount change and invalidates existing approvals", () => {
-    const modified = { ...sampleDraft, totalAmount: 55000n };
+    const modified = { ...sampleDraft, totalAmount: "55000" };
     const result = analyzeApprovalInvalidation(sampleDraft, modified);
     expect(result.requiresReapproval).toBe(true);
     expect(result.invalidatedApprovalsCount).toBe(2);
@@ -44,8 +44,8 @@ describe("Approval Invalidation Analyzer (#404)", () => {
     const modified: PayrollDraft = {
       ...sampleDraft,
       recipients: [
-        { id: "e1", amount: "25000", recipientAddress: "GAAA..." },
-        { id: "e2", amount: "25000", recipientAddress: "GBBB..." },
+        { amount: "25000", recipientId: "GAAA..." },
+        { amount: "25000", recipientId: "GBBB..." },
       ],
     };
     const result = analyzeApprovalInvalidation(sampleDraft, modified);

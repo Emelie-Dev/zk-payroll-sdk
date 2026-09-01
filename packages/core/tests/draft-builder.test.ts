@@ -1,4 +1,10 @@
-import { DraftBuilder, DraftValidationFailedError, exportDraft, importDraft } from "../src";
+import {
+  createDraft,
+  DraftBuilder,
+  DraftValidationFailedError,
+  exportDraft,
+  importDraft,
+} from "../src/draft";
 
 type NativeEntryOverrides = Partial<{
   recipientId: string;
