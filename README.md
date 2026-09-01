@@ -17,9 +17,7 @@ draft, and read payroll status.
 import { PayrollContract, ConfigPresets, DraftBuilder } from "@zk-payroll/sdk";
 
 // 1. Initialize the SDK
-const config = ConfigPresets.testnet()
-  .withContractId("CCONTRACT_ID_EXAMPLE")
-  .build();
+const config = ConfigPresets.testnet().withContractId("CCONTRACT_ID_EXAMPLE").build();
 const contract = new PayrollContract(config);
 
 // 2. Validate a payroll draft before submitting it
@@ -56,7 +54,7 @@ const service = new PayrollService(config);
 // Process a private payment
 await service.processPayment(
   "G...", // Recipient Stellar address
-  1000n   // Amount
+  1000n // Amount
 );
 ```
 
@@ -65,6 +63,7 @@ await service.processPayment(
 The SDK enforces strict schema validation for all configuration parameters (`network`, `rpcUrl`/`networkUrl`, `contractId`/`contractIds`, `proofConfig`, `retryPolicy`, and `featureFlags`) before operations run.
 
 #### Minimal Valid Config Example
+
 ```typescript
 import { ConfigPresets, validateConfig, assertValidConfig } from "@zk-payroll/sdk";
 
@@ -84,6 +83,7 @@ assertValidConfig(config);
 ```
 
 #### Invalid Configuration Handling
+
 The `ConfigBuilder` and `assertValidConfig` fail fast with structured `ValidationError` (`code: CONFIG_VALIDATION_ERROR`) if required fields are missing or malformed:
 
 ```typescript
@@ -120,19 +120,41 @@ await service.processPayment({
 - **Error Handling**: Robust error typing and management.
 - **Mock Testing Environment**: Comprehensive testing utilities for unit tests without a live network.
 
+## Testing and reusable fixtures
+
+Use the repo’s deterministic fixtures as the default starting point for payroll, employee, asset, and event tests. Keep fixture data stable and reusable across test files, and compose small builder helpers that accept overrides instead of copy-pasting ad hoc payloads.
+
+```typescript
+import { createPayrollDraftFixture } from "./packages/core/tests/fixtures";
+
+const draft = createPayrollDraftFixture({
+  label: "May 2025 Payroll",
+  entries: [
+    {
+      recipientId: "GAEMPLOYEE1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+      amount: "2500",
+      asset: "USDC",
+    },
+  ],
+});
+```
+
+- Testing guide: [docs/TESTING.md](./docs/TESTING.md)
+- Fixture library: [packages/core/tests/fixtures](./packages/core/tests/fixtures)
+
 ## Browser and Backend Usage
 
 Use this section to pick the right environment before you wire the SDK into a product. The package supports **browsers** (wallets, dashboards) and **Node.js backends** (workers, automation), but secrets and signing paths differ.
 
 ### Quick matrix
 
-| Concern | Browser (frontend) | Backend (Node worker / service) |
-|--------|--------------------|----------------------------------|
-| **Wallet signing** | User wallets (Freighter, Albedo) via adapters | Server-held keys from a secrets manager — **not** browser extensions |
-| **Proof generation** | On-device with snarkjs; prefer [Web Workers](./docs/WORKER_PROOF_GENERATION.md) so the UI stays responsive | On the worker/process for batch payroll; good for heavy or unattended jobs |
-| **Secrets / witnesses** | Never embed Stellar secret keys (`S…`) or long-lived note secrets in frontend code, env shipped to the client, or `localStorage` | Load signer material from env / KMS / secrets manager; never log full witnesses |
-| **Next.js / SSR** | Import SDK only in Client Components (`"use client"`) | Do not import the browser wallet path in Server Components or Route Handlers for UI signing |
-| **Best fit** | Employee/employer dashboards, interactive connect + sign | Payroll automation, queues, retries, multi-payment workers |
+| Concern                 | Browser (frontend)                                                                                                               | Backend (Node worker / service)                                                             |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| **Wallet signing**      | User wallets (Freighter, Albedo) via adapters                                                                                    | Server-held keys from a secrets manager — **not** browser extensions                        |
+| **Proof generation**    | On-device with snarkjs; prefer [Web Workers](./docs/WORKER_PROOF_GENERATION.md) so the UI stays responsive                       | On the worker/process for batch payroll; good for heavy or unattended jobs                  |
+| **Secrets / witnesses** | Never embed Stellar secret keys (`S…`) or long-lived note secrets in frontend code, env shipped to the client, or `localStorage` | Load signer material from env / KMS / secrets manager; never log full witnesses             |
+| **Next.js / SSR**       | Import SDK only in Client Components (`"use client"`)                                                                            | Do not import the browser wallet path in Server Components or Route Handlers for UI signing |
+| **Best fit**            | Employee/employer dashboards, interactive connect + sign                                                                         | Payroll automation, queues, retries, multi-payment workers                                  |
 
 Supported runtime versions: [Runtime Support Matrix](./docs/SUPPORT_MATRIX.md).
 
@@ -181,11 +203,11 @@ const service = new PayrollService(config);
 
 ### Secret handling (both environments)
 
-| Do | Don't |
-|----|--------|
-| Keep note `secret` / nullifier inputs in memory only as long as needed for proving | Log witnesses, proofs with private inputs, or secret keys |
-| Use HTTPS CDN or authenticated artifact hosts for `.wasm` / `.zkey` | Ship production signing keys in frontend env (`NEXT_PUBLIC_*`, Vite `VITE_*`, etc.) |
-| Rotate and scope backend signer keys; prefer HSM/KMS where possible | Reuse a single hot key across untrusted multi-tenant frontends |
+| Do                                                                                 | Don't                                                                               |
+| ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Keep note `secret` / nullifier inputs in memory only as long as needed for proving | Log witnesses, proofs with private inputs, or secret keys                           |
+| Use HTTPS CDN or authenticated artifact hosts for `.wasm` / `.zkey`                | Ship production signing keys in frontend env (`NEXT_PUBLIC_*`, Vite `VITE_*`, etc.) |
+| Rotate and scope backend signer keys; prefer HSM/KMS where possible                | Reuse a single hot key across untrusted multi-tenant frontends                      |
 
 Proof APIs and witness shapes: [ZK Proof Generation](./docs/ZK_PROOF_GENERATION.md).
 
@@ -290,6 +312,7 @@ source examples/.env && npx tsx examples/payroll-execution.ts
 ```
 
 See [`examples/.env.example`](./examples/.env.example) for all available variables.
+
 ## Typed Contract Clients
 
 The SDK provides typed client wrappers for the core ZK Payroll contracts. Each client exposes typed methods that encode arguments and decode responses automatically.
@@ -336,10 +359,14 @@ await client.commit(
 const commitment = await client.getCommitment("G...", "G...", 1n, signer);
 
 // Batch commit multiple salaries
-await client.batchCommit("G...", [
-  { employee: "G...1", commitmentHash: "abcd", cycleId: 1n },
-  { employee: "G...2", commitmentHash: "ef01", cycleId: 1n },
-], signer);
+await client.batchCommit(
+  "G...",
+  [
+    { employee: "G...1", commitmentHash: "abcd", cycleId: 1n },
+    { employee: "G...2", commitmentHash: "ef01", cycleId: 1n },
+  ],
+  signer
+);
 
 // Verify a commitment against a ZK proof
 const isValid = await client.verifyCommitment("G...", "G...", 1n, proof, signer);
@@ -356,9 +383,7 @@ Consumers rarely pass payroll data in exactly one shape (different key names, ex
 import { normalizePayrollPayload } from "@zk-payroll/sdk";
 
 const { entries, issues } = normalizePayrollPayload({
-  entries: [
-    { employee_id: "  E-42  ", wallet: "gabc...", asset: "xlm", amount: "1,000.50" },
-  ],
+  entries: [{ employee_id: "  E-42  ", wallet: "gabc...", asset: "xlm", amount: "1,000.50" }],
 });
 
 // entries[0] => { employeeId: "E-42", walletAddress: "GABC...", asset: "native", amount: "1000.50", source: {...} }
@@ -405,7 +430,15 @@ const client = new ProofVerifierClient(server, "CCONTRACT_ID...");
 
 // Verify a ZK proof on-chain
 const valid = await client.verify(
-  { pi_a: ["1","2"], pi_b: [["3","4"],["5","6"]], pi_c: ["7","8"], publicSignals: ["sig1"] },
+  {
+    pi_a: ["1", "2"],
+    pi_b: [
+      ["3", "4"],
+      ["5", "6"],
+    ],
+    pi_c: ["7", "8"],
+    publicSignals: ["sig1"],
+  },
   ["input1"],
   1, // verification key ID
   signer
@@ -483,10 +516,12 @@ if (!result.isValid) {
 ### Diagnostic Result Structure
 
 `validateEnvironment` returns a `SanityCheckResult` containing:
+
 - `isValid: boolean` - `true` if all validations pass with no errors.
 - `diagnostics: DiagnosticEntry[]` - List of diagnostics for each checked component.
 
 Each `DiagnosticEntry` contains:
+
 - `component: "rpc" | "contract" | "artifacts"` - The checked component.
 - `status: "success" | "warning" | "error"` - The validation status.
 - `message: string` - Actionable diagnostic message explaining the result.
@@ -535,7 +570,7 @@ import {
 // Throwing variant — canonical { amount, decimals, assetSymbol, assetId, wasRounded, original }
 const { amount, assetSymbol, wasRounded } = normalizeCanonicalAmount(
   "  $1,000.50 XLM  ", // formatted string with currency symbol + whitespace
-  "native",             // asset id resolved via AssetRegistry
+  "native", // asset id resolved via AssetRegistry
   { rounding: RoundingMode.HALF_UP }
 );
 // amount      => 10_005_000_000n (canonical stroops)
