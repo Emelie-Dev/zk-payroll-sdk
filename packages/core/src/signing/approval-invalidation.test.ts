@@ -11,17 +11,17 @@ describe("Approval Invalidation Analyzer (#404)", () => {
   const sampleDraft: PayrollDraft = {
     draftId: "draft-001",
     version: 1,
-    totalAmount: 50000n,
+    totalAmount: "50000",
     asset: "USDC",
     recipients: [
-      { id: "e1", amount: 30000n, recipientAddress: "GAAA..." },
-      { id: "e2", amount: 20000n, recipientAddress: "GBBB..." },
+      { id: "e1", amount: "30000", recipientAddress: "GAAA..." },
+      { id: "e2", amount: "20000", recipientAddress: "GBBB..." },
     ],
-    scheduleTimestamp: 1700000000,
+    scheduleTimestamp: "1700000000",
     policy: basePolicy,
     approvals: [
-      { approver: "admin1", signature: "sig1", approvedAt: 1699990000 },
-      { approver: "admin2", signature: "sig2", approvedAt: 1699990100 },
+      { approver: "admin1", signature: "sig1", approvedAt: "1699990000" },
+      { approver: "admin2", signature: "sig2", approvedAt: "1699990100" },
     ],
   };
 
@@ -44,8 +44,8 @@ describe("Approval Invalidation Analyzer (#404)", () => {
     const modified: PayrollDraft = {
       ...sampleDraft,
       recipients: [
-        { id: "e1", amount: 25000n, recipientAddress: "GAAA..." },
-        { id: "e2", amount: 25000n, recipientAddress: "GBBB..." },
+        { id: "e1", amount: "25000", recipientAddress: "GAAA..." },
+        { id: "e2", amount: "25000", recipientAddress: "GBBB..." },
       ],
     };
     const result = analyzeApprovalInvalidation(sampleDraft, modified);
